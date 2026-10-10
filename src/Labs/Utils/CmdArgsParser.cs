@@ -15,11 +15,11 @@ namespace Labs.Utils
                 {
                     if (args.Length > i + 1)
                     {
-                        values.Add(args[i], args[i + 1]);
+                        values[args[i]] = args[i + 1];
                     }
                     else
                     {
-                        values.Add(args[i], null);
+                        values[args[i]] = null;
                     }
                 }
             }
