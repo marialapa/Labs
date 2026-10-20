@@ -8,7 +8,7 @@ namespace Labs
     public class Program
     {
         private const int MinTaskNumber = 1;
-        private const int MaxTaskNumber = 2;
+        private const int MaxTaskNumber = 3;
         private const string DateFormat = "dd.MM.yyyy";
 
         public static void Main(string[] args)
@@ -34,6 +34,9 @@ namespace Labs
                     break;
                 case 2:
                     RunTask2(dictArgs);
+                    break;
+                case 3:
+                    RunTask3(dictArgs);
                     break;
                 default:
                     PrintError(GetUnknownTaskMessage(iTask));
@@ -122,10 +125,32 @@ namespace Labs
             PrintResult(lResult);
         }
 
+        // --task 3: проверки строк (Лабораторная работа 3)
+        private static void RunTask3(Dictionary<string, string?> dictArgs)
+        {
+            if (!TryGetStringArg(dictArgs, "-s1", "S1", out string sFirst, out string? sError))
+            {
+                PrintError(sError);
+                return;
+            }
+
+            if (!TryGetStringArg(dictArgs, "-s2", "S2", out string sSecond, out sError))
+            {
+                PrintError(sError);
+                return;
+            }
+
+            PrintCheck("EQUAL", Task3StringChecker.IsEqual(sFirst, sSecond));
+            PrintCheck("NORMALIZED", Task3StringChecker.IsNormalizedEqual(sFirst, sSecond));
+            PrintCheck("REVERSED", Task3StringChecker.IsReversed(sFirst, sSecond));
+            PrintStringTypes("S1", sFirst);
+            PrintStringTypes("S2", sSecond);
+        }
+
         private static void PrintHelp()
         {
             Console.WriteLine("HELP:");
-            Console.WriteLine("    --task - task number (1 or 2)");
+            Console.WriteLine("    --task - task number (1, 2 or 3)");
             Console.WriteLine();
             Console.WriteLine("    Task 1: calculates (Y % X) / sqrt(Z)");
             Console.WriteLine("    -x - value of X (integer)");
@@ -139,9 +164,14 @@ namespace Labs
             Console.WriteLine("    -d2st - start of the second date segment (DD.MM.YYYY)");
             Console.WriteLine("    -d2end - end of the second date segment (DD.MM.YYYY)");
             Console.WriteLine();
+            Console.WriteLine("    Task 3: string checks (EQUAL, NORMALIZED, REVERSED, EMAIL / PHONE / IP for each string)");
+            Console.WriteLine("    -s1 - first string");
+            Console.WriteLine("    -s2 - second string");
+            Console.WriteLine();
             Console.WriteLine("    Examples:");
             Console.WriteLine("        Labs --task 1 -x 1 -y 2 -z 3");
             Console.WriteLine("        Labs --task 2 -d1st 12.12.2020 -d1end 17.12.2020 -d2st 10.12.2020 -d2end 15.12.2020");
+            Console.WriteLine("        Labs --task 3 -s1 \"Hello, world!\" -s2 \"hello world\"");
         }
 
         private static void PrintError(string? sMessage)
@@ -157,6 +187,19 @@ namespace Labs
         private static void PrintResult(double dResult)
         {
             Console.WriteLine($"RESULT: {dResult.ToString("0.000", CultureInfo.InvariantCulture)}");
+        }
+
+        private static void PrintCheck(string sLabel, bool bValue)
+        {
+            string sValue = bValue ? "TRUE" : "FALSE";
+            Console.WriteLine($"{sLabel}: {sValue}");
+        }
+
+        private static void PrintStringTypes(string sPrefix, string sValue)
+        {
+            PrintCheck($"{sPrefix}_EMAIL", Task3StringChecker.IsEmail(sValue));
+            PrintCheck($"{sPrefix}_PHONE", Task3StringChecker.IsPhone(sValue));
+            PrintCheck($"{sPrefix}_IP", Task3StringChecker.IsIp(sValue));
         }
 
         private static string GetUnknownTaskMessage(int iTask)
@@ -206,6 +249,21 @@ namespace Labs
                 return false;
             }
 
+            return true;
+        }
+
+        private static bool TryGetStringArg(Dictionary<string, string?> dictArgs, string sKey, string sName, out string sValue, out string? sError)
+        {
+            sValue = string.Empty;
+            sError = null;
+
+            if (!dictArgs.TryGetValue(sKey, out var sRaw) || sRaw is null)
+            {
+                sError = $"Value {sName} must be specified.";
+                return false;
+            }
+
+            sValue = sRaw;
             return true;
         }
 
