@@ -1,7 +1,23 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
+using Labs.Validation;
+
 namespace Labs.Utils
 {
+    // Разбор и проверка аргументов командной строки.
+    // При некорректном значении методы Get* генерируют ValidationException
     public class CmdArgsParser
     {
+        private const string TaskKey = "--task";
+        private const string DateFormat = "dd.MM.yyyy";
+
+        private readonly Dictionary<string, string?> m_dictValues;
+
+        public CmdArgsParser(string[] args)
+        {
+            m_dictValues = Parse(args);
+        }
+
         public static Dictionary<string, string?> Parse(string[] args)
         {
             Dictionary<string, string?> values = new Dictionary<string, string?>();
@@ -24,6 +40,75 @@ namespace Labs.Utils
                 }
             }
             return values;
+        }
+
+        public int GetTaskNumber(int iMinTask, int iMaxTask)
+        {
+            if (!m_dictValues.TryGetValue(TaskKey, out var sRaw) || sRaw is null)
+            {
+                throw new ValidationException("Task number is required.");
+            }
+
+            if (!int.TryParse(sRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out int iTask))
+            {
+                throw new ValidationException("Task number must be an integer.");
+            }
+
+            if (iTask < iMinTask)
+            {
+                throw new ValidationException($"Unknown task. Task number cannot be less than {iMinTask}.");
+            }
+
+            if (iTask > iMaxTask)
+            {
+                throw new ValidationException($"Unknown task. Task number must not exceed {iMaxTask}.");
+            }
+
+            return iTask;
+        }
+
+        public int GetInt(string sKey, string sName)
+        {
+            if (!m_dictValues.TryGetValue(sKey, out var sRaw) || sRaw is null)
+            {
+                throw new ValidationException($"Value {sName} is required.");
+            }
+
+            if (!int.TryParse(sRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out int iValue))
+            {
+                throw new ValidationException($"Value {sName} must be an integer.");
+            }
+
+            return iValue;
+        }
+
+        public string GetString(string sKey, string sName)
+        {
+            if (!m_dictValues.TryGetValue(sKey, out var sRaw) || sRaw is null)
+            {
+                throw new ValidationException($"Value {sName} must be specified.");
+            }
+
+            return sRaw;
+        }
+
+        public DateTime GetDate(string sKey, string sName)
+        {
+            if (!m_dictValues.TryGetValue(sKey, out var sRaw) || sRaw is null)
+            {
+                throw new ValidationException($"Value {sName} is required.");
+            }
+
+            // Строго ДД.ММ.ГГГГ: 1.09.2020, 10.9.2020 и 10.10.20 - некорректны
+            bool bFormatOk = Regex.IsMatch(sRaw, @"^\d{2}\.\d{2}\.\d{4}$");
+            bool bDateOk = DateTime.TryParseExact(sRaw, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dtValue);
+
+            if (!bFormatOk || !bDateOk)
+            {
+                throw new ValidationException($"Value {sName} must be a valid date in format DD.MM.YYYY.");
+            }
+
+            return dtValue;
         }
     }
 }

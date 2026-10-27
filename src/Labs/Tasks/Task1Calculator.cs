@@ -1,33 +1,41 @@
+using Labs.Utils;
+using Labs.Validation;
+
 namespace Labs.Tasks
 {
     // Вариант 14: (Y % X) / sqrt(Z)
     public static class Task1Calculator
     {
-        public static bool TryCalculate(int x, int y, int z, out double result, out string? error)
+        // --task 1: расчёт формулы (Лабораторная работа 1)
+        public static void Run(CmdArgsParser parser)
         {
-            result = 0;
-            error = null;
+            int iX = parser.GetInt("-x", "X");
+            int iY = parser.GetInt("-y", "Y");
+            int iZ = parser.GetInt("-z", "Z");
 
-            if (x == 0)
+            double dResult = Calculate(iX, iY, iZ);
+
+            ConsoleOutput.PrintResult(dResult);
+        }
+
+        public static double Calculate(int iX, int iY, int iZ)
+        {
+            if (iX == 0)
             {
-                error = "Value X must not be 0.";
-                return false;
+                throw new ValidationException("Value X must not be 0.");
             }
 
-            if (z < 0)
+            if (iZ < 0)
             {
-                error = "Value Z must not be negative.";
-                return false;
+                throw new ValidationException("Value Z must not be negative.");
             }
 
-            if (z == 0)
+            if (iZ == 0)
             {
-                error = "Value Z must not be 0.";
-                return false;
+                throw new ValidationException("Value Z must not be 0.");
             }
 
-            result = (y % x) / Math.Sqrt(z);
-            return true;
+            return (iY % iX) / Math.Sqrt(iZ);
         }
     }
 }
