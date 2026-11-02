@@ -1,8 +1,7 @@
 using System.Text.RegularExpressions;
-using Labs.Utils;
 using Labs.Validation;
 
-namespace Labs.Tasks
+namespace Labs.Calculations
 {
     // Проверки строк. Методы Validate* не читают консоль и аргументы:
     // принимают строки параметрами и при неуспешной проверке генерируют ValidationException
@@ -13,34 +12,6 @@ namespace Labs.Tasks
         private static readonly Regex s_rxIp = new Regex(@"^(?:(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})$");
         private static readonly Regex s_rxPhone = new Regex(@"^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$");
         private static readonly Regex s_rxMultipleSpaces = new Regex(@"\s{2,}");
-
-        // --task 3: проверки строк (Лабораторные работы 3 и 4)
-        public static void Run(CmdArgsParser parser)
-        {
-            string sFirst = parser.GetString("-s1", "S1");
-            string sSecond = parser.GetString("-s2", "S2");
-
-            ConsoleOutput.PrintCheck("EQUAL", IsPassed(() => ValidateEqual(sFirst, sSecond)));
-            ConsoleOutput.PrintCheck("NORMALIZED", IsPassed(() => ValidateNormalizedEqual(sFirst, sSecond)));
-            ConsoleOutput.PrintCheck("REVERSED", IsPassed(() => ValidateReversed(sFirst, sSecond)));
-            PrintStringTypes("S1", sFirst);
-            PrintStringTypes("S2", sSecond);
-        }
-
-        // Обработчик ошибок проверки: выполняет проверку и превращает
-        // ValidationException в FALSE, успешное выполнение - в TRUE
-        public static bool IsPassed(Action actValidation)
-        {
-            try
-            {
-                actValidation();
-                return true;
-            }
-            catch (ValidationException)
-            {
-                return false;
-            }
-        }
 
         // EQUAL: посимвольное совпадение с учётом регистра
         public static void ValidateEqual(string sFirst, string sSecond)
@@ -115,11 +86,5 @@ namespace Labs.Tasks
             return new string(arrChars);
         }
 
-        private static void PrintStringTypes(string sPrefix, string sValue)
-        {
-            ConsoleOutput.PrintCheck($"{sPrefix}_EMAIL", IsPassed(() => ValidateEmail(sValue)));
-            ConsoleOutput.PrintCheck($"{sPrefix}_PHONE", IsPassed(() => ValidatePhone(sValue)));
-            ConsoleOutput.PrintCheck($"{sPrefix}_IP", IsPassed(() => ValidateIp(sValue)));
-        }
     }
 }

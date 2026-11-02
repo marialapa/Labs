@@ -13,31 +13,49 @@ namespace Labs
         {
             if (args.Length == 0)
             {
-                ConsoleOutput.PrintHelp();
+                ConsoleOutput.PrintText(HelpText.GetText());
                 return;
             }
 
-            // Единая точка обработки ошибок: любая ValidationException
-            // превращается в строку "ERROR: <пояснение>"
+            // Единая точка обработки ошибок ввода и валидации.
             try
             {
                 CmdArgsParser parser = new CmdArgsParser(args);
                 int iTask = parser.GetTaskNumber(MinTaskNumber, MaxTaskNumber);
 
+                LabTask task;
                 switch (iTask)
                 {
                     case 1:
-                        Task1Calculator.Run(parser);
+                        task = new FormulaTask(
+                            parser.GetInt("-x", "X"),
+                            parser.GetInt("-y", "Y"),
+                            parser.GetInt("-z", "Z"));
                         break;
                     case 2:
-                        Task2Calculator.Run(parser);
+                        task = new DateIntersectionTask(
+                            parser.GetDate("-d1st", "D1ST"),
+                            parser.GetDate("-d1end", "D1END"),
+                            parser.GetDate("-d2st", "D2ST"),
+                            parser.GetDate("-d2end", "D2END"));
                         break;
                     case 3:
-                        Task3StringChecker.Run(parser);
+                        task = new StringCheckTask(
+                            parser.GetString("-s1", "S1"),
+                            parser.GetString("-s2", "S2"));
                         break;
                     default:
                         throw new ValidationException($"Unknown task {iTask}.");
                 }
+
+                foreach (string sLine in task.Execute())
+                {
+                    ConsoleOutput.PrintText(sLine);
+                }
+            }
+            catch (InputException exInput)
+            {
+                ConsoleOutput.PrintError(exInput.Message);
             }
             catch (ValidationException exValidation)
             {

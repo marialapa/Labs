@@ -1,7 +1,6 @@
-using Labs.Utils;
 using Labs.Validation;
 
-namespace Labs.Tasks
+namespace Labs.Calculations
 {
     // Вариант 7: сумма всех натуральных чисел от 1 до N,
     // где N - длина пересечения двух отрезков дат (концы включаются)
@@ -10,24 +9,6 @@ namespace Labs.Tasks
         // Ограничение на N: глубина рекурсии остаётся безопасной для стека,
         // а сумма 1 + ... + 10000 = 50 005 000 гарантированно помещается в long
         public const int MaxDays = 10000;
-
-        // --task 2: рекурсивный расчёт по пересечению отрезков дат (Лабораторная работа 2)
-        public static void Run(CmdArgsParser parser)
-        {
-            DateTime dtFirstStart = parser.GetDate("-d1st", "D1ST");
-            DateTime dtFirstEnd = parser.GetDate("-d1end", "D1END");
-            DateTime dtSecondStart = parser.GetDate("-d2st", "D2ST");
-            DateTime dtSecondEnd = parser.GetDate("-d2end", "D2END");
-
-            ValidateSegment(dtFirstStart, dtFirstEnd, "first");
-            ValidateSegment(dtSecondStart, dtSecondEnd, "second");
-
-            int iDays = GetIntersectionDays(dtFirstStart, dtFirstEnd, dtSecondStart, dtSecondEnd);
-            long lResult = Calculate(iDays);
-
-            ConsoleOutput.PrintDays(iDays);
-            ConsoleOutput.PrintResult(lResult);
-        }
 
         public static void ValidateSegment(DateTime dtStart, DateTime dtEnd, string sSegmentName)
         {

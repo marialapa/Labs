@@ -1,11 +1,10 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Labs.Validation;
 
 namespace Labs.Utils
 {
     // Разбор и проверка аргументов командной строки.
-    // При некорректном значении методы Get* генерируют ValidationException
+    // При некорректном значении методы Get* генерируют InputException
     public class CmdArgsParser
     {
         private const string TaskKey = "--task";
@@ -25,7 +24,7 @@ namespace Labs.Utils
             {
                 return values;
             }
-            for(int i = 0; i < args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 if (args[i].StartsWith("-"))
                 {
@@ -46,22 +45,22 @@ namespace Labs.Utils
         {
             if (!m_dictValues.TryGetValue(TaskKey, out var sRaw) || sRaw is null)
             {
-                throw new ValidationException("Task number is required.");
+                throw new InputException("Task number is required.");
             }
 
             if (!int.TryParse(sRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out int iTask))
             {
-                throw new ValidationException("Task number must be an integer.");
+                throw new InputException("Task number must be an integer.");
             }
 
             if (iTask < iMinTask)
             {
-                throw new ValidationException($"Unknown task. Task number cannot be less than {iMinTask}.");
+                throw new InputException($"Unknown task. Task number cannot be less than {iMinTask}.");
             }
 
             if (iTask > iMaxTask)
             {
-                throw new ValidationException($"Unknown task. Task number must not exceed {iMaxTask}.");
+                throw new InputException($"Unknown task. Task number must not exceed {iMaxTask}.");
             }
 
             return iTask;
@@ -71,12 +70,12 @@ namespace Labs.Utils
         {
             if (!m_dictValues.TryGetValue(sKey, out var sRaw) || sRaw is null)
             {
-                throw new ValidationException($"Value {sName} is required.");
+                throw new InputException($"Value {sName} is required.");
             }
 
             if (!int.TryParse(sRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out int iValue))
             {
-                throw new ValidationException($"Value {sName} must be an integer.");
+                throw new InputException($"Value {sName} must be an integer.");
             }
 
             return iValue;
@@ -86,7 +85,7 @@ namespace Labs.Utils
         {
             if (!m_dictValues.TryGetValue(sKey, out var sRaw) || sRaw is null)
             {
-                throw new ValidationException($"Value {sName} must be specified.");
+                throw new InputException($"Value {sName} must be specified.");
             }
 
             return sRaw;
@@ -96,7 +95,7 @@ namespace Labs.Utils
         {
             if (!m_dictValues.TryGetValue(sKey, out var sRaw) || sRaw is null)
             {
-                throw new ValidationException($"Value {sName} is required.");
+                throw new InputException($"Value {sName} is required.");
             }
 
             // Строго ДД.ММ.ГГГГ: 1.09.2020, 10.9.2020 и 10.10.20 - некорректны
@@ -105,7 +104,7 @@ namespace Labs.Utils
 
             if (!bFormatOk || !bDateOk)
             {
-                throw new ValidationException($"Value {sName} must be a valid date in format DD.MM.YYYY.");
+                throw new InputException($"Value {sName} must be a valid date in format DD.MM.YYYY.");
             }
 
             return dtValue;
