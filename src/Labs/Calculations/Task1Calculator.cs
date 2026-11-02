@@ -22,7 +22,9 @@ namespace Labs.Calculations
                 throw new ValidationException("Value Z must not be 0.");
             }
 
-            return (iY % iX) / Math.Sqrt(iZ);
+            // Приведение к long до операции % предотвращает переполнение
+            // для int.MinValue % -1, математический остаток которого равен 0.
+            return ((long)iY % iX) / Math.Sqrt(iZ);
         }
     }
 }

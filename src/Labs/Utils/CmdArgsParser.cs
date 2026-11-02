@@ -20,21 +20,21 @@ namespace Labs.Utils
         public static Dictionary<string, string?> Parse(string[] args)
         {
             Dictionary<string, string?> values = new Dictionary<string, string?>();
-            if (args.Length == 0)
-            {
-                return values;
-            }
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i].StartsWith("-"))
+                if (args[i].StartsWith("-", StringComparison.Ordinal))
                 {
-                    if (args.Length > i + 1)
+                    string sKey = args[i];
+                    if (i + 1 < args.Length)
                     {
-                        values[args[i]] = args[i + 1];
+                        // Значение уже принадлежит текущему ключу, даже если
+                        // начинается с дефиса (например, -1 или строка --task).
+                        i++;
+                        values[sKey] = args[i];
                     }
                     else
                     {
-                        values[args[i]] = null;
+                        values[sKey] = null;
                     }
                 }
             }

@@ -7,10 +7,11 @@ namespace Labs.Calculations
     // принимают строки параметрами и при неуспешной проверке генерируют ValidationException
     public static class Task3StringChecker
     {
-        // Шаблоны из задания, заякорены ^...$ - совпадение должно быть по всей строке
-        private static readonly Regex s_rxEmail = new Regex(@"^(?:[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+)$");
-        private static readonly Regex s_rxIp = new Regex(@"^(?:(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})$");
-        private static readonly Regex s_rxPhone = new Regex(@"^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$");
+        // Строгие границы \A и \z: совпадает вся строка, включая её конец.
+        // В отличие от $, \z не допускает лишний перевод строки после значения.
+        private static readonly Regex s_rxEmail = new Regex(@"\A(?:[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+)\z");
+        private static readonly Regex s_rxIp = new Regex(@"\A(?:(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})\z");
+        private static readonly Regex s_rxPhone = new Regex(@"\A[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}\z");
         private static readonly Regex s_rxMultipleSpaces = new Regex(@"\s{2,}");
 
         // EQUAL: посимвольное совпадение с учётом регистра
