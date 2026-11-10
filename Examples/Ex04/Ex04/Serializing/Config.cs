@@ -34,11 +34,3 @@ namespace Ex04.Serializing
         }
     }
 }
-
-/*
- *  <Config>
- *      <field name="DataBaseServerAddress" value="127.0.0.1" />
- *      ...
- *  <Config>
- * 
- */

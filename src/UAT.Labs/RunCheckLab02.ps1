@@ -1,37 +1,4 @@
-﻿<#
-.SYNOPSIS
-    Автоматическая проверка лабораторной работы Lab02 (рекурсивный калькулятор).
-
-.DESCRIPTION
-    Запускает студенческий исполняемый файл и проверяет его вывод согласно
-    критериям приёмки из Labs/Lab02.md, а также контрольным примерам из
-    Labs/Lab02_ControlValues.csv (только для указанного варианта).
-
-    В отличие от Lab01, при успешном расчёте программа выводит две строки:
-    сначала "DAYS: <N>" (длина пересечения отрезков дат), затем
-    "RESULT: <R>" (значение рекурсивной формулы, 3 знака после запятой).
-
-    Кроссплатформенный (Windows / Linux / macOS): требуется только PowerShell
-    (5.1 или 7+), дополнительные модули не нужны.
-
-.PARAMETER ExePath
-    Путь до исполняемого файла. По умолчанию - src\Labs\bin\Debug\net10.0\Labs.exe
-    (с автоматическим поиском в src\Labs\bin, если файл не найден).
-
-.PARAMETER Variant
-    Номер варианта (1-8). Если не указан - запрашивается интерактивно.
-
-.PARAMETER MaxTestRuntime
-    Максимальное время одного запуска в секундах (по умолчанию 5).
-    Зависание программы помечается как Warning, а не ошибка.
-
-.EXAMPLE
-    .\RunCheckLab02.ps1 -Variant 1
-
-.EXAMPLE
-    .\RunCheckLab02.ps1 -Variant 3 -ExePath D:\...\Labs.exe -MaxTestRuntime 10
-#>
-
+﻿
 [CmdletBinding()]
 param(
     [string]$ExePath,
@@ -42,7 +9,6 @@ param(
 $scriptDir = $PSScriptRoot
 if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
 
-# Подключение общих функций (запуск процесса, поиск exe, вывод тестов и пр.)
 . ([System.IO.Path]::Combine($scriptDir, 'Common.ps1'))
 
 function Test-StudentOutput {
@@ -93,7 +59,6 @@ function Test-StudentOutput {
             }
         }
         'Success' {
-            # Первая значимая строка: DAYS: <N>
             if ($first -notmatch '^\s*DAYS\s*:\s*(.+)$') {
                 $res.Comment = "Первая значимая строка должна иметь вид 'DAYS: <N>', а получено: '$first'"
                 return $res
@@ -111,7 +76,6 @@ function Test-StudentOutput {
                 }
             }
 
-            # Вторая значимая строка: RESULT: <R>
             if ($lines.Count -lt 2) {
                 $res.Comment = "Ожидалась вторая значимая строка 'RESULT: <R>', но вывод содержит только одну значимую строку"
                 return $res
@@ -123,7 +87,6 @@ function Test-StudentOutput {
             }
             $value = $Matches[1].Trim()
 
-            # Формат: ровно 3 знака после запятой, разделитель '.' или ','
             if ($value -notmatch '^[-+]?\d+[.,]\d{3}$') {
                 $res.Comment = "Значение должно форматироваться до 3 знаков после запятой (например '120.000', а не '$value')"
                 return $res
@@ -132,7 +95,6 @@ function Test-StudentOutput {
             if (-not [string]::IsNullOrEmpty($ExpectedResult)) {
                 $actualNum = [decimal]($value -replace ',', '.')
                 $expectedNum = [decimal]($ExpectedResult -replace ',', '.')
-                # Сравнение до 2 знаков после запятой, 3-й знак игнорируется (усечение)
                 $a2 = [math]::Truncate($actualNum * 100)
                 $e2 = [math]::Truncate($expectedNum * 100)
                 if ($a2 -ne $e2) {
@@ -147,13 +109,11 @@ function Test-StudentOutput {
     return $res
 }
 
-# ===================== Основной поток =====================
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
 $csvPath = [System.IO.Path]::Combine($repoRoot, 'Labs', 'Lab02_ControlValues.csv')
 $defaultDir = [System.IO.Path]::Combine($repoRoot, 'src', 'Labs', 'bin', 'Debug', 'net10.0')
 
-# --- Проверка варианта ---
 if (-not $PSBoundParameters.ContainsKey('Variant')) {
     do {
         $answer = Read-Host 'Введите номер варианта (1-8)'
@@ -170,7 +130,6 @@ if ($MaxTestRuntime -le 0) {
     exit 2
 }
 
-# --- Поиск исполняемого файла ---
 $resolvedExe = Resolve-ExePath -ProvidedPath $ExePath -RepoRoot $repoRoot
 if ($null -eq $resolvedExe) {
     Write-Line 'Ошибка: исполняемый файл не найден.' -Color $ColorErr
@@ -182,7 +141,6 @@ if ($null -eq $resolvedExe) {
     exit 2
 }
 
-# --- Способ запуска (dotnet для .dll) ---
 $exeFile = $resolvedExe
 $exePrefixArgs = @()
 $exeDisplay = Get-DisplayPath -Path $resolvedExe -RepoRoot $repoRoot
@@ -192,19 +150,14 @@ if ($resolvedExe -match '\.dll$') {
     $exeDisplay = 'dotnet ' + (Get-DisplayPath -Path $resolvedExe -RepoRoot $repoRoot)
 }
 
-# --- Чтение контрольных примеров ---
 if (-not (Test-Path -LiteralPath $csvPath -PathType Leaf)) {
     Write-Line "Ошибка: не найден файл контрольных примеров: $csvPath" -Color $ColorErr
     exit 2
 }
 $csvRows = Import-Csv -LiteralPath $csvPath -Encoding UTF8
 
-# --- Проверки из раздела "Приёмка" (варианто-независимые) ---
 $commonDates = @('-d1st','12.12.2020','-d1end','17.12.2020','-d2st','10.12.2020','-d2end','15.12.2020')
 
-# Пример "Успешный запуск" из документа использует N=4. Для варианта 2
-# (функция Аккермана) N>=4 превышает практический предел вычислений,
-# поэтому корректная программа выводит ERROR, а не результат.
 $successLaunchKind    = if ($Variant -eq 2) { 'Error' } else { 'Success' }
 $successLaunchDays    = if ($Variant -eq 2) { $null } else { 4 }
 $successLaunchDisplay = if ($Variant -eq 2) { 'ERROR: ... (N=4 превышает предел для функции Аккермана)' } else { 'DAYS: 4; RESULT: <3 знака после запятой>' }
@@ -220,7 +173,6 @@ $acceptanceTests = @(
     [PSCustomObject]@{ Name = 'Успешный запуск'; Arguments = @('--task','2') + $commonDates; Kind = $successLaunchKind; ExpectedDays = $successLaunchDays; ExpectedResult = $null; ExpectedDisplay = $successLaunchDisplay }
 )
 
-# --- Контрольные примеры из CSV для указанного варианта ---
 $csvTests = @()
 foreach ($row in $csvRows) {
     if ([int]$row.'Вариант' -ne $Variant) { continue }
@@ -258,13 +210,11 @@ foreach ($row in $csvRows) {
 
 $allTests = @($acceptanceTests) + @($csvTests)
 
-# --- Заголовок ---
 Write-Line 'Parameters:'
 Write-Line "ExePath: $resolvedExe"
 Write-Line "Variant: $Variant"
 Write-Line ''
 
-# --- Выполнение ---
 $statOk = 0
 $statErr = 0
 $statWarn = 0

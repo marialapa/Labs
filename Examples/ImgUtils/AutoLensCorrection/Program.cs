@@ -43,16 +43,12 @@ namespace AutoLensCorrection
 
             string[] inputImages = Directory.GetFiles(cmdLineParams.InputFolder).Where(f => IMAGE_EXTENSIONS.Contains(Path.GetExtension(f).ToLower())).ToArray();
 
-            foreach (string imgPath in inputImages/*.Take(1).ToArray()*/)
+            foreach (string imgPath in inputImages                      )
             {
                 string fileName = Path.GetFileName(imgPath);
                 Console.WriteLine("Image processing {0}...", fileName);
                 Mat image = CvInvoke.Imread(imgPath);
-                //CvInvoke.Imshow("before", image);
-                //CvInvoke.WaitKey(0);
                 Mat outputImg = LensCorrection.Correct(image, lensParams);
-                //CvInvoke.Imshow("after", outputImg);
-                //CvInvoke.WaitKey(0);
                 outputImg.Save(Path.Combine(cmdLineParams.OutputFolder, fileName));
             }
         }

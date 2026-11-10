@@ -35,7 +35,6 @@ namespace Ex04
 
             Console.WriteLine("============================ Content ============================");
 
-            //string[] lines = FileUtilSimple.ReadFile(filePath);
             string[] lines = File.ReadAllLines(filePath);
             foreach (string line in lines)
             {

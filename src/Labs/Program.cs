@@ -17,7 +17,6 @@ namespace Labs
                 return;
             }
 
-            // Единая точка обработки ошибок ввода и валидации.
             try
             {
                 CmdArgsParser parser = new CmdArgsParser(args);

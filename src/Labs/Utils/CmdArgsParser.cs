@@ -3,8 +3,6 @@ using System.Text.RegularExpressions;
 
 namespace Labs.Utils
 {
-    // Разбор и проверка аргументов командной строки.
-    // При некорректном значении методы Get* генерируют InputException
     public class CmdArgsParser
     {
         private const string TaskKey = "--task";
@@ -27,8 +25,6 @@ namespace Labs.Utils
                     string sKey = args[i];
                     if (i + 1 < args.Length)
                     {
-                        // Значение уже принадлежит текущему ключу, даже если
-                        // начинается с дефиса (например, -1 или строка --task).
                         i++;
                         values[sKey] = args[i];
                     }
@@ -98,7 +94,6 @@ namespace Labs.Utils
                 throw new InputException($"Value {sName} is required.");
             }
 
-            // Строго ДД.ММ.ГГГГ: 1.09.2020, 10.9.2020 и 10.10.20 - некорректны
             bool bFormatOk = Regex.IsMatch(sRaw, @"^\d{2}\.\d{2}\.\d{4}$");
             bool bDateOk = DateTime.TryParseExact(sRaw, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dtValue);
 

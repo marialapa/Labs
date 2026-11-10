@@ -32,7 +32,6 @@ namespace ImgUtils
                 {
                     imageSize = new Size(img.Width, img.Height);
                 }
-                //CvInvoke.Imshow("input", img);
                 VectorOfPointF corners = new VectorOfPointF(patternSize.Width * patternSize.Height);
                 bool find = CvInvoke.FindChessboardCorners(img, patternSize, corners);
                 if (find)

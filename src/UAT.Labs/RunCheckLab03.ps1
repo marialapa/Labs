@@ -1,41 +1,4 @@
-﻿<#
-.SYNOPSIS
-    Автоматическая проверка лабораторной работы Lab03 (работа со строками).
-
-.DESCRIPTION
-    Запускает студенческий исполняемый файл и проверяет его вывод согласно
-    критериям приёмки из Labs/Lab03.md.
-
-    В рамках Lab03 реализуется задание --task 3 — проверка двух строк:
-        EQUAL       - посимвольное совпадение (с учётом регистра);
-        NORMALIZED  - совпадение после нормализации (регистр, пробелы);
-        REVERSED    - первая строка является перевёртышем второй;
-        S1_* / S2_* - определение типа каждой строки (email / телефон / IP).
-    Задания --task 1 и --task 2 реализованы в предыдущих лабораторных работах
-    и должны продолжать работать, однако данная проверка фокусируется на
-    задании --task 3.
-
-    В отличие от Lab01/Lab02 у Lab03 нет файла контрольных примеров и нет
-    варианта: критерии приёмки фиксированы в Labs/Lab03.md.
-
-    Кроссплатформенный (Windows / Linux / macOS): требуется только PowerShell
-    (5.1 или 7+), дополнительные модули не нужны.
-
-.PARAMETER ExePath
-    Путь до исполняемого файла. По умолчанию - src\Labs\bin\Debug\net10.0\Labs.exe
-    (с автоматическим поиском в src\Labs\bin, если файл не найден).
-
-.PARAMETER MaxTestRuntime
-    Максимальное время одного запуска в секундах (по умолчанию 5).
-    Зависание программы помечается как Warning, а не ошибка.
-
-.EXAMPLE
-    .\RunCheckLab03.ps1
-
-.EXAMPLE
-    .\RunCheckLab03.ps1 -ExePath D:\...\Labs.exe -MaxTestRuntime 10
-#>
-
+﻿
 [CmdletBinding()]
 param(
     [string]$ExePath,
@@ -45,7 +8,6 @@ param(
 $scriptDir = $PSScriptRoot
 if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
 
-# Подключение общих функций (запуск процесса, поиск exe, вывод тестов и пр.)
 . ([System.IO.Path]::Combine($scriptDir, 'Common.ps1'))
 
 function Test-StudentOutput {
@@ -177,7 +139,6 @@ function New-Lab03Test {
     }
 }
 
-# ===================== Основной поток =====================
 
 $repoRoot   = Split-Path -Parent (Split-Path -Parent $scriptDir)
 $defaultDir = [System.IO.Path]::Combine($repoRoot, 'src', 'Labs', 'bin', 'Debug', 'net10.0')
@@ -187,7 +148,6 @@ if ($MaxTestRuntime -le 0) {
     exit 2
 }
 
-# --- Поиск исполняемого файла ---
 $resolvedExe = Resolve-ExePath -ProvidedPath $ExePath -RepoRoot $repoRoot
 if ($null -eq $resolvedExe) {
     Write-Line 'Ошибка: исполняемый файл не найден.' -Color $ColorErr
@@ -199,7 +159,6 @@ if ($null -eq $resolvedExe) {
     exit 2
 }
 
-# --- Способ запуска (dotnet для .dll) ---
 $exeFile = $resolvedExe
 $exePrefixArgs = @()
 $exeDisplay = Get-DisplayPath -Path $resolvedExe -RepoRoot $repoRoot
@@ -209,10 +168,6 @@ if ($resolvedExe -match '\.dll$') {
     $exeDisplay = 'dotnet ' + (Get-DisplayPath -Path $resolvedExe -RepoRoot $repoRoot)
 }
 
-# --- Проверки из раздела "Приёмка" ---
-# Для успешного запуска ожидаемые значения задаются строками 'TRUE'/'FALSE'
-# в порядке вывода: EQUAL, NORMALIZED, REVERSED, S1_EMAIL, S1_PHONE, S1_IP,
-# S2_EMAIL, S2_PHONE, S2_IP.
 $acceptanceTests = @(
     (New-Lab03Test -Name 'Запуск без аргументов' -Arguments @() -Kind 'Help' -ExpectedDisplay 'HELP: ...'),
     (New-Lab03Test -Name 'Ввод числа вне диапазона [--task 4]' -Arguments @('--task','4','-s1','abc','-s2','abc') -Kind 'Error' -ExpectedDisplay 'ERROR: Unknown task. Task number must not exceed 3.'),
@@ -228,12 +183,10 @@ $acceptanceTests = @(
     (New-Lab03Test -Name 'Успешный запуск: проверка типов (телефон)' -Arguments @('--task','3','-s1','123-456-7890','-s2','abc') -Kind 'Success' -ExpectedEqual 'FALSE' -ExpectedNormalized 'FALSE' -ExpectedReversed 'FALSE' -ExpectedS1Email 'FALSE' -ExpectedS1Phone 'TRUE' -ExpectedS1Ip 'FALSE' -ExpectedS2Email 'FALSE' -ExpectedS2Phone 'FALSE' -ExpectedS2Ip 'FALSE')
 )
 
-# --- Заголовок ---
 Write-Line 'Parameters:'
 Write-Line "ExePath: $resolvedExe"
 Write-Line ''
 
-# --- Выполнение ---
 $statOk = 0
 $statErr = 0
 $statWarn = 0

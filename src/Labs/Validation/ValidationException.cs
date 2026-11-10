@@ -1,7 +1,5 @@
 namespace Labs.Validation
 {
-    // Исключение для ошибок проверки входных данных.
-    // Пояснение к ошибке хранится в унаследованном свойстве Message
     public class ValidationException : Exception
     {
         public ValidationException() : base()

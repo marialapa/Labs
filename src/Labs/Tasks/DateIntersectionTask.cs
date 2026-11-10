@@ -2,7 +2,6 @@ using Labs.Calculations;
 
 namespace Labs.Tasks
 {
-    // Задание 2 получает четыре даты, а не аргументы командной строки.
     public class DateIntersectionTask : LabTask
     {
         private readonly DateTime m_dtFirstStart;

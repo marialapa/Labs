@@ -20,16 +20,13 @@ namespace AutoScale
 
         static AppSettings()
         {
-            // Установка имени переменной среды
             const string environmentVariableName = "ASPNETCORE_ENVIRONMENT";
-            // Получение значения переменной среды
             var environmentName =
                 Environment.GetEnvironmentVariable(environmentVariableName);
 
             _config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
                 .AddJsonFile("appsettings.json")
-                // Добавление json-файла для среды environmentName
                 .AddJsonFile($"appsettings.{environmentName}.json")
                 .AddEnvironmentVariables()
                 .Build();

@@ -1,32 +1,4 @@
-﻿<#
-.SYNOPSIS
-    Общие вспомогательные функции для скриптов автоматической проверки
-    лабораторных работ (RunCheckLab*.ps1).
-
-.DESCRIPTION
-    Переиспользуемые функции, не зависящие от конкретной лабораторной работы:
-    запуск процесса с таймаутом, поиск исполняемого файла, форматирование вывода
-    тестов и пр. Подключается через dot-sourcing:
-
-        . (Join-Path $PSScriptRoot 'Common.ps1')
-
-    Скрипт конкретной лабораторной работы после подключения определяет
-    собственную функцию Test-StudentOutput, которая выполняет
-    лабораторно-специфичный анализ вывода программы.
-
-    Соглашение о структуре объекта теста ($Test), передаваемого в Run-Test и
-    Test-StudentOutput:
-        Name            - название теста
-        Arguments       - массив аргументов командной строки
-        Kind            - тип ожидаемого результата: 'Help' | 'Error' | 'Success' | 'Result'
-        ExpectedDisplay - текст эталона для вывода при ошибке
-        ... и лабораторно-специфичные поля эталона (например, ExpectedValue
-            для Lab01 или ExpectedDays/ExpectedResult для Lab02).
-
-    Кроссплатформенный (Windows / Linux / macOS): требуется только PowerShell
-    (5.1 или 7+), дополнительные модули не нужны.
-#>
-
+﻿
 $ColorOk   = [ConsoleColor]::Green
 $ColorErr  = [ConsoleColor]::Red
 $ColorWarn = [ConsoleColor]::Yellow
@@ -129,7 +101,6 @@ function Invoke-Program {
         $result.StdErr = $errTask.Result
         $result.ExitCode = $proc.ExitCode
     } catch {
-        # ошибка чтения потоков не критична - частичный вывод уже собран
     } finally {
         try { $proc.Dispose() } catch {}
     }
@@ -178,7 +149,6 @@ function Resolve-ExePath {
         }
     }
 
-    # Широкий поиск по bin (иная конфигурация/фреймворк или имя exe)
     $binDir = [System.IO.Path]::Combine($RepoRoot, 'src', 'Labs', 'bin')
     if (Test-Path -LiteralPath $binDir) {
         $matches = @(Get-ChildItem -LiteralPath $binDir -Recurse -File -ErrorAction SilentlyContinue |

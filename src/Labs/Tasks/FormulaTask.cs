@@ -2,7 +2,6 @@ using Labs.Calculations;
 
 namespace Labs.Tasks
 {
-    // Задание 1 получает готовые целые числа и вызывает отдельный калькулятор.
     public class FormulaTask : LabTask
     {
         private readonly int m_iX;

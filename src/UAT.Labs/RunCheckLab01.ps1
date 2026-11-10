@@ -1,33 +1,4 @@
-﻿<#
-.SYNOPSIS
-    Автоматическая проверка лабораторной работы Lab01 (калькулятор).
-
-.DESCRIPTION
-    Запускает студенческий исполняемый файл и проверяет его вывод согласно
-    критериям приёмки из Labs/Lab01.md, а также контрольным примерам из
-    Labs/Lab01_ControlValues.csv (только для указанного варианта).
-
-    Кроссплатформенный (Windows / Linux / macOS): требуется только PowerShell
-    (5.1 или 7+), дополнительные модули не нужны.
-
-.PARAMETER ExePath
-    Путь до исполняемого файла. По умолчанию - src\Labs\bin\Debug\net10.0\Labs.exe
-    (с автоматическим поиском в src\Labs\bin, если файл не найден).
-
-.PARAMETER Variant
-    Номер варианта (1-15). Если не указан - запрашивается интерактивно.
-
-.PARAMETER MaxTestRuntime
-    Максимальное время одного запуска в секундах (по умолчанию 5).
-    Зависание программы помечается как Warning, а не ошибка.
-
-.EXAMPLE
-    .\RunCheckLab01.ps1 -Variant 1
-
-.EXAMPLE
-    .\RunCheckLab01.ps1 -Variant 3 -ExePath D:\...\Labs.exe -MaxTestRuntime 10
-#>
-
+﻿
 [CmdletBinding()]
 param(
     [string]$ExePath,
@@ -38,7 +9,6 @@ param(
 $scriptDir = $PSScriptRoot
 if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
 
-# Подключение общих функций (запуск процесса, поиск exe, вывод тестов и пр.)
 . ([System.IO.Path]::Combine($scriptDir, 'Common.ps1'))
 
 function Test-StudentOutput {
@@ -93,7 +63,6 @@ function Test-StudentOutput {
             }
             $value = $Matches[1].Trim()
 
-            # Формат: ровно 3 знака после запятой, разделитель '.' или ','
             if ($value -notmatch '^[-+]?\d+[.,]\d{3}$') {
                 $res.Comment = "Значение должно форматироваться до 3 знаков после запятой (например '3.000', а не '$value')"
                 return $res
@@ -102,7 +71,6 @@ function Test-StudentOutput {
             $actualNum = [decimal]($value -replace ',', '.')
             if (-not [string]::IsNullOrEmpty($ExpectedValue)) {
                 $expectedNum = [decimal]($ExpectedValue -replace ',', '.')
-                # Сравнение до 2 знаков после запятой, 3-й знак игнорируется (усечение)
                 $a2 = [math]::Truncate($actualNum * 100)
                 $e2 = [math]::Truncate($expectedNum * 100)
                 if ($a2 -eq $e2) {
@@ -119,13 +87,11 @@ function Test-StudentOutput {
     return $res
 }
 
-# ===================== Основной поток =====================
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
 $csvPath = [System.IO.Path]::Combine($repoRoot, 'Labs', 'Lab01_ControlValues.csv')
 $defaultDir = [System.IO.Path]::Combine($repoRoot, 'src', 'Labs', 'bin', 'Debug', 'net10.0')
 
-# --- Проверка варианта ---
 if (-not $PSBoundParameters.ContainsKey('Variant')) {
     do {
         $answer = Read-Host 'Введите номер варианта (1-15)'
@@ -142,7 +108,6 @@ if ($MaxTestRuntime -le 0) {
     exit 2
 }
 
-# --- Поиск исполняемого файла ---
 $resolvedExe = Resolve-ExePath -ProvidedPath $ExePath -RepoRoot $repoRoot
 if ($null -eq $resolvedExe) {
     Write-Line 'Ошибка: исполняемый файл не найден.' -Color $ColorErr
@@ -154,7 +119,6 @@ if ($null -eq $resolvedExe) {
     exit 2
 }
 
-# --- Способ запуска (dotnet для .dll) ---
 $exeFile = $resolvedExe
 $exePrefixArgs = @()
 $exeDisplay = Get-DisplayPath -Path $resolvedExe -RepoRoot $repoRoot
@@ -164,14 +128,12 @@ if ($resolvedExe -match '\.dll$') {
     $exeDisplay = 'dotnet ' + (Get-DisplayPath -Path $resolvedExe -RepoRoot $repoRoot)
 }
 
-# --- Чтение контрольных примеров ---
 if (-not (Test-Path -LiteralPath $csvPath -PathType Leaf)) {
     Write-Line "Ошибка: не найден файл контрольных примеров: $csvPath" -Color $ColorErr
     exit 2
 }
 $csvRows = Import-Csv -LiteralPath $csvPath -Encoding UTF8
 
-# --- Проверки из раздела "Приёмка" (варианто-независимые) ---
 $acceptanceTests = @(
     [PSCustomObject]@{ Name = 'Запуск без аргументов'; Arguments = @(); Kind = 'Help'; ExpectedValue = $null; ExpectedDisplay = 'HELP: ...' },
     [PSCustomObject]@{ Name = 'Ввод числа вне диапазона [--task 2]'; Arguments = @('--task','2','-x','1','-y','2','-z','-1'); Kind = 'Error'; ExpectedValue = $null; ExpectedDisplay = 'ERROR: Unknown task. Task number must not exceed 1.' },
@@ -181,7 +143,6 @@ $acceptanceTests = @(
     [PSCustomObject]@{ Name = 'Некорректное значение параметра [--task 1 -x Zero]'; Arguments = @('--task','1','-x','Zero','-y','2','-z','3'); Kind = 'Error'; ExpectedValue = $null; ExpectedDisplay = 'ERROR: Value X must be an integer.' }
 )
 
-# --- Контрольные примеры из CSV для указанного варианта ---
 $csvTests = @()
 foreach ($row in $csvRows) {
     if ([int]$row.'Вариант' -ne $Variant) { continue }
@@ -215,13 +176,11 @@ foreach ($row in $csvRows) {
 
 $allTests = @($acceptanceTests) + @($csvTests)
 
-# --- Заголовок ---
 Write-Line 'Parameters:'
 Write-Line "ExePath: $resolvedExe"
 Write-Line "Variant: $Variant"
 Write-Line ''
 
-# --- Выполнение ---
 $statOk = 0
 $statErr = 0
 $statWarn = 0

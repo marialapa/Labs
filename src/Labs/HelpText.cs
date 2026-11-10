@@ -1,6 +1,5 @@
 namespace Labs
 {
-    // Описание режимов приложения. Утилиты вывода получают уже готовый текст.
     public static class HelpText
     {
         public static string GetText()

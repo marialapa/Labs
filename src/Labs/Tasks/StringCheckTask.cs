@@ -2,7 +2,6 @@ using Labs.Calculations;
 
 namespace Labs.Tasks
 {
-    // Задание 3 получает две строки и формирует результаты девяти проверок.
     public class StringCheckTask : LabTask
     {
         private readonly string m_sFirst;

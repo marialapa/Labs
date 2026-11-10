@@ -2,12 +2,8 @@ using Labs.Validation;
 
 namespace Labs.Calculations
 {
-    // Вариант 7: сумма всех натуральных чисел от 1 до N,
-    // где N - длина пересечения двух отрезков дат (концы включаются)
     public static class Task2Calculator
     {
-        // Ограничение на N: глубина рекурсии остаётся безопасной для стека,
-        // а сумма 1 + ... + 10000 = 50 005 000 гарантированно помещается в long
         public const int MaxDays = 10000;
 
         public static void ValidateSegment(DateTime dtStart, DateTime dtEnd, string sSegmentName)
@@ -46,7 +42,6 @@ namespace Labs.Calculations
             return SumNaturalNumbers(iDays);
         }
 
-        // S(0) = 0; S(n) = n + S(n - 1)
         public static long SumNaturalNumbers(int iNumber)
         {
             if (iNumber <= 0)
